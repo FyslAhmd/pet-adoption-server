@@ -1,8 +1,9 @@
 import express from "express";
-import { createUser, updateLastLogin } from "../controllers/userController.js";
+import { createUser, getOnlyEmail, updateLastLogin } from "../controllers/userController.js";
 
 const router = express.Router();
 
+router.get("/getOnlyEmail", getOnlyEmail);
 router.post("/", createUser);
 router.patch("/last-login", updateLastLogin);
 
