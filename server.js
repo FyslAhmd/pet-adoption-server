@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 
 import userRoutes from "./routes/userRoutes.js";
+import petRoutes from "./routes/petRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -16,6 +17,7 @@ await connectDB();
 
 //routes
 app.use("/users", userRoutes);
+app.use("/pets", petRoutes);
 
 app.get("/", (req, res) => {
   res.send("Pet Adoption Backend is Running...");
