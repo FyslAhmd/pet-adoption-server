@@ -23,6 +23,24 @@ export const getAvailablePets = async (req, res) => {
   res.send(pets);
 };
 
+export const getFavouritePets = async (req, res) => {
+  const db = getDB();
+  const petsCollection = db.collection("pets");
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+  try {
+    const favouritePets = await petsCollection
+      .find({ favourites: email })
+      .toArray();
+    res.send(favouritePets);
+  } catch (error) {
+    console.error("Error fetching favourite pets:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const getPetById = async (req, res) => {
   const db = getDB();
   const { id } = req.params;
@@ -114,6 +132,43 @@ export const updateStatusPending = async (req, res) => {
     res.json({ message: "Pet status updated to pending", adopterEmail });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const updateFavourite = async (req, res) => {
+  const db = getDB();
+  const petsCollection = db.collection("pets");
+  const { id } = req.params;
+  const { userEmail } = req.body;
+  if (!userEmail) {
+    return res.status(400).json({ message: "User email is required" });
+  }
+  try {
+    const pet = await petsCollection.findOne({ _id: new ObjectId(id) });
+    if (!pet) {
+      return res.status(404).json({ message: "Pet not found" });
+    }
+    const favourites = Array.isArray(pet.favourites) ? pet.favourites : [];
+    let updatedFavourites;
+    if (favourites.includes(userEmail)) {
+      updatedFavourites = favourites.filter((email) => email !== userEmail);
+    } else {
+      updatedFavourites = [...favourites, userEmail];
+    }
+    await petsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { favourites: updatedFavourites } }
+    );
+    const updatedPet = await petsCollection.findOne({ _id: new ObjectId(id) });
+    res.json({
+      message: favourites.includes(userEmail)
+        ? "Removed from favourites"
+        : "Added to favourites",
+      pet: updatedPet,
+    });
+  } catch (error) {
+    console.error("Error updating favourites:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
