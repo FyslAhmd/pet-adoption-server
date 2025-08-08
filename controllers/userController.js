@@ -10,6 +10,16 @@ export const getOnlyEmail = async (req, res) => {
   res.send(emails);
 };
 
+export const getUserByEmail = async (req, res) => {
+  const db = getDB();
+  const email = req.query.email;
+  if (!email) {
+    return res.status(400).json({ error: "Email query parameter is required" });
+  }
+  const user = await db.collection("users").findOne({ email });
+  res.status(200).send(user);
+};
+
 export const createUser = async (req, res) => {
   const db = getDB();
   const user = req.body;
@@ -27,4 +37,14 @@ export const updateLastLogin = async (req, res) => {
     }
   );
   res.send(result);
+};
+
+export const getUserRole = async (req, res) => {
+  const db = getDB();
+  const { email } = req.query;
+  const user = await db.collection("users").findOne({ email });
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
+  res.send({ role: user.role });
 };
