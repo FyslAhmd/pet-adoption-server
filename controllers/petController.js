@@ -13,6 +13,23 @@ export const getPetsByUser = async (req, res) => {
   res.send(pets);
 };
 
+export const getAvailablePets = async (req, res) => {
+  const db = getDB();
+  const pets = await db
+    .collection("pets")
+    .find({ status: "available" })
+    .sort({ created_at: -1 })
+    .toArray();
+  res.send(pets);
+};
+
+export const getPetById = async (req, res) => {
+  const db = getDB();
+  const { id } = req.params;
+  const pet = await db.collection("pets").findOne({ _id: new ObjectId(id) });
+  res.send(pet);
+};
+
 export const createPet = async (req, res) => {
   const db = getDB();
   const {
@@ -69,6 +86,34 @@ export const createPet = async (req, res) => {
   } catch (error) {
     console.error("Error in createPet:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const updateStatusPending = async (req, res) => {
+  try {
+    const db = getDB();
+    const petsCollection = db.collection("pets");
+    const { id } = req.params;
+    const { adopterEmail } = req.body;
+    console.log(id, adopterEmail);
+    const result = await petsCollection.updateOne(
+      { _id: new ObjectId(id), status: "available" },
+      {
+        $set: {
+          status: "pending",
+          adopter_email: adopterEmail,
+          adoption_requested_at: new Date(),
+        },
+      }
+    );
+    if (result.matchedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "Pet not found or already pending/adopted" });
+    }
+    res.json({ message: "Pet status updated to pending", adopterEmail });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
