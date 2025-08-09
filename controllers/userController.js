@@ -10,6 +10,16 @@ export const getOnlyEmail = async (req, res) => {
   res.send(emails);
 };
 
+export const getUserRole = async (req, res) => {
+  const db = getDB();
+  const { email } = req.query;
+  const user = await db.collection("users").findOne({ email });
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
+  res.send({ role: user.role });
+};
+
 export const getUserByEmail = async (req, res) => {
   const db = getDB();
   const email = req.query.email;
@@ -18,6 +28,12 @@ export const getUserByEmail = async (req, res) => {
   }
   const user = await db.collection("users").findOne({ email });
   res.status(200).send(user);
+};
+
+export const getAllUsers = async (req, res) => {
+  const db = getDB();
+  const users = await db.collection("users").find().toArray();
+  res.send(users);
 };
 
 export const createUser = async (req, res) => {
@@ -39,12 +55,22 @@ export const updateLastLogin = async (req, res) => {
   res.send(result);
 };
 
-export const getUserRole = async (req, res) => {
+export const updateUserRole = async (req, res) => {
   const db = getDB();
-  const { email } = req.query;
-  const user = await db.collection("users").findOne({ email });
-  if (!user) {
-    return res.status(404).send({ message: "User not found" });
-  }
-  res.send({ role: user.role });
+  const { email } = req.params;
+  const { role } = req.body;
+  const result = await db.collection("users").updateOne(
+    { email },
+    {
+      $set: { role },
+    }
+  );
+  res.send(result);
+};
+
+export const deleteUser = async (req, res) => {
+  const db = getDB();
+  const { email } = req.params;
+  const result = await db.collection("users").deleteOne({ email });
+  res.send(result);
 };

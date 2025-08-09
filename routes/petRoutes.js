@@ -2,6 +2,7 @@ import express from "express";
 import {
   createPet,
   deletePet,
+  getAllPets,
   getAvailablePets,
   getFavouritePets,
   getPetById,
@@ -14,6 +15,7 @@ import {
 const router = express.Router();
 
 router.get("/", getPetsByUser);
+router.get("/all", getAllPets);
 router.get("/available", getAvailablePets);
 router.get("/favourites", getFavouritePets);
 router.get("/:id", getPetById);
