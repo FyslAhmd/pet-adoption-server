@@ -13,6 +13,12 @@ export const getPetsByUser = async (req, res) => {
   res.send(pets);
 };
 
+export const getAllPets = async (req, res) => {
+  const db = getDB();
+  const pets = await db.collection("pets").find().toArray();
+  res.send(pets);
+};
+
 export const getAvailablePets = async (req, res) => {
   const db = getDB();
   const pets = await db
